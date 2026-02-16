@@ -1,0 +1,35 @@
+﻿using Elm.Application.Contracts;
+using Elm.Application.Contracts.Abstractions.Cache;
+using Elm.Application.Contracts.Features.College.DTOs;
+using Elm.Application.Contracts.Features.College.Queries;
+using Elm.Application.Contracts.Repositories;
+using MediatR;
+
+namespace Elm.Application.Features.College.Handlers
+{
+    public sealed class GetAllCollegeHandler : IRequestHandler<GetAllCollegesQuery, Result<List<GetCollegeDto>>>
+    {
+        private readonly ICollegeRepository _collegeRepository;
+        private readonly IGenericCacheService _cacheService;
+        public GetAllCollegeHandler(ICollegeRepository collegeRepository, IGenericCacheService cacheService)
+        {
+            _collegeRepository = collegeRepository;
+            _cacheService = cacheService;
+        }
+        public async Task<Result<List<GetCollegeDto>>> Handle(GetAllCollegesQuery request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var cacheKey = "all_colleges";
+                var colleges = await _cacheService.GetOrSetAsync(cacheKey,
+                    () => _collegeRepository.GetAllCollegeInUniversityAsync(request.universityId));
+                return Result<List<GetCollegeDto>>.Success(colleges);
+            }
+            catch (Exception ex)
+            {
+
+                return Result<List<GetCollegeDto>>.Failure($"An error occurred while retrieving colleges: {ex.Message}");
+            }
+        }
+    }
+}

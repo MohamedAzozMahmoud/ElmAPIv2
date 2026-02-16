@@ -1,0 +1,29 @@
+﻿using Elm.Application.Contracts;
+using Elm.Application.Contracts.Features.University.DTOs;
+using Elm.Application.Contracts.Features.University.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+
+namespace Elm.API.Controllers
+{
+    [EnableRateLimiting("PublicContentPolicy")]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UniversityPublicController : ApiBaseController
+    {
+        private readonly IMediator mediator;
+
+        public UniversityPublicController(IMediator _mediator)
+        {
+            mediator = _mediator;
+        }
+
+        // GET: api/University
+        [HttpGet]
+        [Route("GetUniversit")]
+        [ProducesResponseType(typeof(Result<UniversityDetialsDto>), 200)]
+        public async Task<IActionResult> Get()
+            => HandleResult(await mediator.Send(new GetUniversityQuery()));
+    }
+}
